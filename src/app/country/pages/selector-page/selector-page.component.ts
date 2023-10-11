@@ -1,0 +1,47 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CountryService } from '../../services/country.service';
+import { Region } from '../../interfaces/country.interface';
+import { switchMap, tap } from 'rxjs';
+
+@Component({
+  selector: 'app-selector-page',
+  templateUrl: './selector-page.component.html',
+  styles: [
+  ]
+})
+export class SelectorPageComponent implements OnInit {
+
+  public myForm: FormGroup = this.fb.group({
+    region: ['', Validators.required],
+    country: ['', Validators.required],
+    borders: ['', Validators.required],
+
+  })
+
+  constructor(
+    private fb: FormBuilder,
+    private countriesService: CountryService
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.onRegionChanged();
+  }
+
+
+  get regions(): Region[] {
+    return this.countriesService.regions
+  }
+
+  onRegionChanged(): void {
+    this.myForm.get('region')?.valueChanges
+      .pipe(
+        tap( () => this.myForm.get('country')!.setValue('') ),
+        switchMap(region => this.countriesService.getCountriesRegion(region))
+      )
+      .subscribe( countries => {
+        this.countriesByRegion //!TODO AQUI QUEDE ARREGLAR ESTO metodo no esta 
+      })
+  }
+}
